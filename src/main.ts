@@ -10,20 +10,20 @@ async function bootstrap() {
   dotenv.config();
   
   const app = await NestFactory.create(AppModule);
-  
-  // Налаштування CORS для роботи з фронтендом
+
+  // CORS
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true,
+    origin: true,               // вместо конкретного URL или '*' 
+    credentials: true,          // если вам нужны куки/авторизация
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
-  
-  // Налаштування захисту
+
+  // Security
   app.use(helmet());
   app.use(cookieParser());
-  
-  // Глобальні пайпи для валідації
+
+  // Validation
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -34,13 +34,15 @@ async function bootstrap() {
       },
     }),
   );
-  
-  // Глобальний префікс API
+
+  // Global API prefix
   app.setGlobalPrefix('api');
-  
-  const port = process.env.PORT || 5005;
-  await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
+
+  // Порт из окружения + 3000 по умолчанию
+  const port = parseInt(process.env.PORT as string, 10) || 5000;
+  // Слушаем на "0.0.0.0" — важно для облачных окружений
+  await app.listen(port, '0.0.0.0');
+  console.log(`🚀 Application is running on http://0.0.0.0:${port}`);
 }
 
 bootstrap();
